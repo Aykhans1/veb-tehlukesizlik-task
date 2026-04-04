@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistemə Giriş</title>
+    <style>
+        body { background-color: #121212; color: #ffffff; font-family: 'Helvetica Neue', Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .login-container { background-color: #000000; width: 100%; max-width: 730px; padding: 80px 60px; border-radius: 8px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; }
+        h1 { font-size: 2.8rem; margin-bottom: 40px; text-align: center; letter-spacing: -1px; }
+        form { width: 100%; max-width: 320px; display: flex; flex-direction: column; }
+        label { font-size: 0.875rem; font-weight: 700; margin-bottom: 8px; }
+        input[type="text"], input[type="password"] { background-color: #121212; color: #ffffff; border: 1px solid #878787; border-radius: 4px; padding: 14px; font-size: 1rem; margin-bottom: 20px; transition: border-color 0.2s; }
+        input:focus { outline: none; border-color: #ffffff; box-shadow: inset 0 0 0 1px #ffffff; }
+        .login-btn { background-color: #1ed760; color: #000000; border: none; border-radius: 500px; padding: 14px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 20px; transition: background-color 0.2s, transform 0.1s; }
+        .login-btn:hover { background-color: #1fdf64; transform: scale(1.04); }
+        .login-btn:active { transform: scale(1); }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h1>Sənin Xərcin</h1>
+        
+        <form>
+            <label for="username">İstifadəçi adı</label>
+            <input type="text" id="username" placeholder="admin">
+            
+            <label for="password">Şifrə</label>
+            <input type="password" id="password" placeholder="12345">
+            
+            <button type="button" class="login-btn">Daxil ol</button>
+        </form>
+    </div>
+
+    <script>
+        document.querySelector('.login-btn').addEventListener('click', async () => {
+            // .trim() funksiyası səhvən yazılmış boşluqları silir
+            const usernameVal = document.getElementById('username').value.trim();
+            const passwordVal = document.getElementById('password').value.trim();
+
+            if (!usernameVal || !passwordVal) {
+                alert('Zəhmət olmasa xanaları doldurun!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: usernameVal, password: passwordVal })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Giriş uğurludursa /dashboard səhifəsinə atır
+                    window.location.href = '/dashboard';
+                } else {
+                    alert('❌ ' + data.message);
+                }
+            } catch (error) {
+                alert('❌ Serverlə əlaqə yoxdur!');
+            }
+        });
+    </script>
+</body>
+</html>
