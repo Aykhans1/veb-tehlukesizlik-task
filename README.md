@@ -8,7 +8,7 @@ Bu layihə, müasir veb tətbiqlərində rast gəlinən kritik təhlükəsizlik 
 Layihənin İcmalı
 
 Tətbiq, istifadəçilərin şəxsi maliyyə göstəricilərini izləyə biləcəyi bir "Maliyyə Hesabatı" platformasıdır. Layihə iki əsas hissədən ibarətdir:
-1.  **Spotify-Inspired Login:** İstifadəçinin autentifikasiyadan keçdiyi vizual interfeys.
+1.   Login:** İstifadəçinin autentifikasiyadan keçdiyi vizual interfeys.
 2.  **Maliyyə Dashboard:** Gəlir və xərclərin dinamik qrafiklərlə (Chart.js) təqdim olunduğu idarəetmə paneli.
 
 Texnoloji Stack
