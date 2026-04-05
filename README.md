@@ -1,74 +1,55 @@
+Daha rəsmi və texniki bir README faylı üçün "İstifadə Qaydaları" (Usage Guide) bölməsini aşağıdakı strukturda hazırladım. Bu hissə layihənin GitHub-da həm bir proqram, həm də bir tədqiqat obyekti kimi necə quraşdırılacağını və sınaqdan keçiriləcəyini izah edir.
 
-Veb-Təhlükəsizlik və SQL Injection Simulyasiyası
-
-Bu layihə, müasir veb tətbiqlərində rast gəlinən kritik təhlükəsizlik boşluqlarını (xüsusilə **SQL Injection**) praktiki olaraq nümayiş etdirmək və bu boşluqların aradan qaldırılma yollarını öyrətmək məqsədilə hazırlanmış bir laboratoriya mühitidir.
-
-
-
-Layihənin İcmalı
-
-Tətbiq, istifadəçilərin şəxsi maliyyə göstəricilərini izləyə biləcəyi bir "Maliyyə Hesabatı" platformasıdır. Layihə iki əsas hissədən ibarətdir:
-1.   Login:** İstifadəçinin autentifikasiyadan keçdiyi vizual interfeys.
-2.  **Maliyyə Dashboard:** Gəlir və xərclərin dinamik qrafiklərlə (Chart.js) təqdim olunduğu idarəetmə paneli.
-
-Texnoloji Stack
-
-Bu layihənin qurulmasında aşağıdakı texnologiyalardan istifadə edilmişdir:
-* **Backend:** Node.js & Express.js freymvorku.
-* **Database:** SQLite3 (Relyasiya tipli verilənlər bazası).
-* **Frontend:** HTML5, CSS3 (Modern Dark UI) və JavaScript (ES6+).
-* **Vizualizasiya:** Chart.js (Maliyyə datalarının qrafikləşdirilməsi üçün).
-
-Təhlükəsizlik Boşluğu: SQL Injection (SQLi)
-
-Layihənin `server.js` faylındakı giriş mexanizmi qəsdən **müdafiəsiz (vulnerable)** şəkildə kodlaşdırılmışdır. İstifadəçidən gələn məlumatlar heç bir filtrasiyadan keçmədən birbaşa SQL sorğusuna daxil edilir:
-
-```javascript
-const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
-```
-
-### Hücum Ssenarisi (Bypass Authentication)
-Hücumçu şifrəni bilmədən aşağıdakı **Payload** vasitəsilə sistemə sıza bilər:
-* **Username:** `' OR 1=1 --`
-* **Password:** `hacker_pass`
-
-Bu manipulyasiya SQL sorğusunun məntiqini dəyişərək şifrə yoxlanışını ləğv edir və hakerə "Admin" yetkiləri ilə daxil olmaq imkanı verir.
-
- Quraşdırma və İşə Salma
-
-Layihəni öz kompüterinizdə yoxlamaq üçün:
-
-1.  Repozitoriyanı klonlayın:
-    ```bash
-    git clone https://github.com/istifadeci_adin/veb-tehlukesizlik.git
-    ```
-2.  Kitabxanaları yükləyin:
-    ```bash
-    npm install
-    ```
-3.  Serveri başladın:
-    ```bash
-    node server.js
-    ```
-4.  Brauzerdə açın: `http://localhost:3000`
-
-Həll Yolu (Mitigation)
-
-Bu boşluğu aradan qaldırmaq üçün layihədə **Parametrləşdirilmiş Sorğular (Parameterized Queries)** metodundan istifadə edilməsi tövsiyə olunur. Bu üsul, istifadəçi tərəfindən daxil edilən məlumatların kod kimi icra olunmasının qarşısını alır:
-
-```javascript
-// Təhlükəsiz Kod Nümunəsi
-const query = "SELECT * FROM users WHERE username = ? AND password = ?";
-db.get(query, [username, password], (err, row) => { ... });
-```
-
-
-
- Nəticə
-
-Bu layihə sübut edir ki, bir veb tətbiqinin vizual olaraq modern və peşəkar görünməsi onun daxili təhlükəsizliyinə zəmanət vermir. Kibertəhlükəsizlik prinsipləri proqram təminatının inkişafı (SDLC) mərhələsində təməl prioritet olmalıdır.
+Bunu əvvəlki mətndəki "Aradan Qaldırma Metodları" bölməsindən sonra əlavə edə bilərsən:
 
 ---
-**Müəllif:** Ayxan Sərxanlı
-**Tarix:** 2026
-**Məqsəd:** Təhsil və Pentest Sınağı.
+
+## Layihənin Quraşdırılması və İstismarı (Installation and Execution)
+
+Tətbiqin lokal mühitdə işə salınması və təhlükəsizlik testlərinin həyata keçirilməsi üçün aşağıdakı prosedurlar ardıcıllıqla yerinə yetirilməlidir:
+
+### 1. Sistem Tələbləri
+* **Node.js:** Versiya 14.0 və ya daha yuxarı.
+* **npm:** Node Paket Meneceri.
+* **Git:** Versiya kontrol sistemi.
+
+### 2. Repozitoriyanın Klonlanması
+Layihəni GitHub-dan yerli diskə köçürmək üçün terminalda aşağıdakı əmri daxil edin:
+```bash
+git clone https://github.com/istifadeci_adin/veb-tehlukesizlik.git
+cd veb-tehlukesizlik
+```
+
+### 3. Asılılıqların (Dependencies) Yüklənməsi
+Lazımi kitabxanaların (Express, SQLite3 və s.) quraşdırılması üçün:
+```bash
+npm install
+```
+
+### 4. Serverin İşə Salınması
+Tətbiqi lokal serverdə (localhost) aktivləşdirmək üçün:
+```bash
+node server.js
+```
+Server uğurla işə düşdükdən sonra brauzer vasitəsilə `http://localhost:3000` ünvanına keçid edin.
+
+---
+
+## Sızma Testinin (Penetration Test) İcrası
+
+Tətbiqdə mövcud olan SQL Injection boşluğunu sınaqdan keçirmək üçün aşağıdakı metodologiyanı tətbiq edin:
+
+1. **İlkin Vəziyyət:** Giriş səhifəsindəki (Login Page) forma xanalarını müəyyən edin.
+2. **Manipulyasiya:** İstifadəçi adı (Username) xanasına aşağıdakı məntiqi ifadəni daxil edin:
+   `' OR 1=1 --`
+3. **İcra:** Şifrə xanasına hər hansı təsadüfi simvollar ardıcıllığı yazın və "Daxil ol" düyməsini sıxın.
+4. **Müşahidə:** Autentifikasiya mexanizminin yan keçildiyini və sistemin "Dashboard" (İdarəetmə Paneli) interfeysinə birbaşa yönləndirmə etdiyini müşahidə edin.
+
+---
+
+## Təhlükəsizlik Xəbərdarlığı (Disclaimer)
+Bu layihə yalnız təhsil və kibertəhlükəsizlik sahəsində maarifləndirmə məqsədilə hazırlanmışdır. Burada nümayiş etdirilən metodların icazəsiz sistemlərə qarşı tətbiqi hüquqi məsuliyyət yarada bilər. Layihənin əsas hədəfi proqramçıları təhlükəsiz kodlaşdırma standartlarına (Secure Coding Standards) riayət etməyə təşviq etməkdir.
+
+---
+**Status:** Aktiv Laboratoriya Mühiti
+**Versiya:** 1.0.0
