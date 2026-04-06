@@ -5,45 +5,80 @@ const app = express();
 
 app.use(express.json());
 
-// 1. Məlumat bazasını yaradırıq (qovluqda database.db adlı fayl yaranacaq)
+// 📦 DATABASE
 const db = new sqlite3.Database('./database.db');
 
-// Baza yarananda cədvəl quraq və içinə adminimizi əlavə edək
 db.serialize(() => {
-    db.run("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, password TEXT)");
-    db.run("INSERT OR IGNORE INTO users (id, username, password) VALUES (1, 'admin', '12345')");
+    db.run(`
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password TEXT
+        )
+    `);
+
+    db.run(`
+        INSERT OR IGNORE INTO users (username, password)
+        VALUES ('admin', '12345')
+    `);
 });
 
-// 2. Login səhifəsini açır
+// 🌐 ROUTES
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'login.html'));
 });
 
-// 3. Maliyyə Hesabatı (Dashboard) səhifəsini açır
 app.get('/dashboard', (req, res) => {
     res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
-// 4. QƏSDƏN ZƏİF YAZILMIŞ GİRİŞ API-si (SQL Injection Tələsi 😈)
+// 🔐 LOGIN API (qəsdən zəif - SQL Injection var)
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
 
-    // DİQQƏT: Bu kod qəsdən çox təhlükəli yazılıb! 
-    // İstifadəçinin yazdığı mətni birbaşa SQL sorğusuna yapışdırırıq.
     const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
 
     db.get(query, (err, row) => {
         if (err) {
-            res.json({ success: false, message: 'Baza xətası: ' + err.message });
-        } else if (row) {
-            res.json({ success: true, message: 'Uğurlu giriş!' });
+            return res.json({ success: false, message: 'Baza xətası' });
+        }
+
+        if (row) {
+            res.json({ success: true });
         } else {
-            res.json({ success: false, message: 'İstifadəçi adı və ya şifrə səhvdir!' });
+            res.json({ success: false, message: 'Yanlış login' });
         }
     });
 });
 
-// 5. Dashboard üçün qrafik məlumatlarını göndərən API
+// 📝 REGISTER API
+app.post('/api/register', (req, res) => {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+        return res.json({ success: false, message: 'Boş ola bilməz' });
+    }
+
+    const checkUser = `SELECT * FROM users WHERE username = '${username}'`;
+
+    db.get(checkUser, (err, row) => {
+        if (row) {
+            return res.json({ success: false, message: 'User artıq var' });
+        }
+
+        const insert = `INSERT INTO users (username, password) VALUES ('${username}', '${password}')`;
+
+        db.run(insert, (err) => {
+            if (err) {
+                return res.json({ success: false, message: 'Xəta baş verdi' });
+            }
+
+            res.json({ success: true });
+        });
+    });
+});
+
+// 📊 REPORT DATA
 app.get('/api/report-data', (req, res) => {
     const data = {
         lineChart: {
@@ -56,6 +91,7 @@ app.get('/api/report-data', (req, res) => {
     res.json(data);
 });
 
+// 🚀 SERVER
 app.listen(3000, () => {
     console.log('Server işləyir: http://localhost:3000');
 });
