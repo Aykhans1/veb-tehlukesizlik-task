@@ -12,125 +12,157 @@
         header { text-align: center; margin-bottom: 40px; }
         header h1 { color: #1ed760; font-size: 2.5rem; }
         header p { color: #a7a7a7; }
+
         .main-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px; }
-        .card { background: #181818; border-radius: 8px; padding: 25px; transition: transform 0.3s ease; border: 1px solid #282828; }
-        .card:hover { transform: translateY(-5px); background: #282828; }
-        .card-header { font-size: 0.9rem; color: #a7a7a7; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
-        .card-value { font-size: 2rem; font-weight: 700; color: #ffffff; }
-        .card-subtext { font-size: 0.8rem; margin-top: 8px; }
-        .text-green { color: #1ed760; }
-        .text-red { color: #ff4757; }
+
+        .card { background: #181818; border-radius: 8px; padding: 25px; border: 1px solid #282828; }
+        .card-header { font-size: 0.9rem; color: #a7a7a7; margin-bottom: 10px; }
+        .card-value { font-size: 2rem; font-weight: 700; }
+
         .charts-section { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        @media (max-width: 768px) { .charts-section { grid-template-columns: 1fr; } }
-        .chart-container { position: relative; height: 300px; width: 100%; margin-top: 15px; }
-        h2 { color: #ffffff; font-size: 1.3rem; border-bottom: 1px solid #282828; padding-bottom: 10px; }
+        .chart-container { height: 300px; }
+
+        .input-box {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .input-box input {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .btn {
+            background: #1ed760;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
 <div class="dashboard-container">
+
     <header>
         <h1>Aylıq Maliyyə Hesabatı</h1>
         <p>Gəlir və Xərclərinizin İcmalı</p>
     </header>
 
+    <!-- DATA ADD FORM -->
+    <div class="input-box">
+        <input type="number" id="incomeInput" placeholder="Gəlir">
+        <input type="number" id="expenseInput" placeholder="Xərc">
+        <button class="btn" onclick="addData()">Əlavə et</button>
+    </div>
+
+    <!-- STATS -->
     <div class="main-stats">
         <div class="card">
             <div class="card-header">Ümumi Balans</div>
-            <div class="card-value">3,450.00 ₼</div>
-            <div class="card-subtext text-green">▲ Keçən aydan +5% çox</div>
+            <div class="card-value" id="balance">0 ₼</div>
         </div>
         <div class="card">
-            <div class="card-header">Bu Aykı Gəlir</div>
-            <div class="card-value">5,200.00 ₼</div>
-            <div class="card-subtext text-green">Maaş + Bonuslar</div>
+            <div class="card-header">Ümumi Gəlir</div>
+            <div class="card-value" id="totalIncome">0 ₼</div>
         </div>
         <div class="card">
-            <div class="card-header">Bu Aykı Xərc</div>
-            <div class="card-value">1,750.00 ₼</div>
-            <div class="card-subtext text-red">▲ Keçən aydan +2% çox</div>
+            <div class="card-header">Ümumi Xərc</div>
+            <div class="card-value" id="totalExpense">0 ₼</div>
         </div>
         <div class="card">
-            <div class="card-header">Yığım Dərəcəsi</div>
-            <div class="card-value">66.3%</div>
-            <div class="card-subtext" style="color: #a7a7a7;">Hədəf: 50%</div>
+            <div class="card-header">Yığım</div>
+            <div class="card-value" id="saving">0 ₼</div>
         </div>
     </div>
 
+    <!-- CHARTS -->
     <div class="charts-section">
         <div class="card">
-            <h2>Gəlir və Xərc Dinamikası</h2>
+            <h2>Gəlir və Xərc</h2>
             <div class="chart-container">
                 <canvas id="lineChart"></canvas>
             </div>
         </div>
+
         <div class="card">
-            <h2>Xərc Kateqoriyaları</h2>
+            <h2>Bölüşdürmə</h2>
             <div class="chart-container">
                 <canvas id="doughnutChart"></canvas>
             </div>
         </div>
     </div>
+
 </div>
 
 <script>
-    // Serverdən (server.js-dən) qrafik rəqəmlərini çəkirik
-    async function fetchReportData() {
-        try {
-            const response = await fetch('/api/report-data');
-            const data = await response.json();
-            drawCharts(data);
-        } catch (error) {
-            console.error('Məlumatları çəkmək mümkün olmadı', error);
-        }
+    let incomes = [];
+    let expenses = [];
+
+    let lineChart, doughnutChart;
+
+    function updateStats() {
+        const totalIncome = incomes.reduce((a, b) => a + b, 0);
+        const totalExpense = expenses.reduce((a, b) => a + b, 0);
+        const balance = totalIncome - totalExpense;
+
+        document.getElementById('totalIncome').innerText = totalIncome + " ₼";
+        document.getElementById('totalExpense').innerText = totalExpense + " ₼";
+        document.getElementById('balance').innerText = balance + " ₼";
+        document.getElementById('saving').innerText = balance + " ₼";
     }
 
-    function drawCharts(data) {
-        Chart.defaults.color = '#a7a7a7';
-        Chart.defaults.borderColor = '#282828';
+    function drawCharts() {
+        const labels = incomes.map((_, i) => "Gün " + (i + 1));
 
-        // Xətt Qrafiki
-        const ctxLine = document.getElementById('lineChart').getContext('2d');
-        new Chart(ctxLine, {
+        if (lineChart) lineChart.destroy();
+        if (doughnutChart) doughnutChart.destroy();
+
+        lineChart = new Chart(document.getElementById('lineChart'), {
             type: 'line',
             data: {
-                labels: data.lineChart.labels,
-                datasets: [{
-                    label: 'Gəlir (₼)',
-                    data: data.lineChart.income,
-                    borderColor: '#1ed760',
-                    backgroundColor: 'rgba(30, 215, 96, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                }, {
-                    label: 'Xərc (₼)',
-                    data: data.lineChart.expense,
-                    borderColor: '#ff4757',
-                    backgroundColor: 'rgba(255, 71, 87, 0.1)',
-                    fill: true,
-                    tension: 0.4
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
+                labels,
+                datasets: [
+                    { label: 'Gəlir', data: incomes, borderColor: '#1ed760' },
+                    { label: 'Xərc', data: expenses, borderColor: '#ff4757' }
+                ]
+            }
         });
 
-        // Halqa Qrafiki
-        const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
-        new Chart(ctxDoughnut, {
+        doughnutChart = new Chart(document.getElementById('doughnutChart'), {
             type: 'doughnut',
             data: {
-                labels: ['Kirayə', 'Qida', 'Nəqliyyat', 'Əyləncə', 'Kommunal'],
+                labels: ['Gəlir', 'Xərc'],
                 datasets: [{
-                    data: data.doughnutChart.categories,
-                    backgroundColor: ['#1ed760', '#ff4757', '#3742fa', '#ffa502', '#a4b0be'],
-                    borderWidth: 0
+                    data: [
+                        incomes.reduce((a,b)=>a+b,0),
+                        expenses.reduce((a,b)=>a+b,0)
+                    ]
                 }]
-            },
-            options: { responsive: true, maintainAspectRatio: false }
+            }
         });
     }
 
-    fetchReportData();
+    function addData() {
+        const income = Number(document.getElementById('incomeInput').value);
+        const expense = Number(document.getElementById('expenseInput').value);
+
+        if (!income && !expense) {
+            alert("Məlumat daxil et!");
+            return;
+        }
+
+        incomes.push(income || 0);
+        expenses.push(expense || 0);
+
+        updateStats();
+        drawCharts();
+    }
 </script>
 
 </body>
