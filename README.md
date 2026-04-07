@@ -1,9 +1,4 @@
 
-
-Bunu əvvəlki mətndəki "Aradan Qaldırma Metodları" bölməsindən sonra əlavə edə bilərsən:
-
----
-
 ## Layihənin Quraşdırılması və İstismarı (Installation and Execution)
 
 Tətbiqin lokal mühitdə işə salınması və təhlükəsizlik testlərinin həyata keçirilməsi üçün aşağıdakı prosedurlar ardıcıllıqla yerinə yetirilməlidir:
