@@ -1,4 +1,4 @@
-Daha rəsmi və texniki bir README faylı üçün "İstifadə Qaydaları" (Usage Guide) bölməsini aşağıdakı strukturda hazırladım. Bu hissə layihənin GitHub-da həm bir proqram, həm də bir tədqiqat obyekti kimi necə quraşdırılacağını və sınaqdan keçiriləcəyini izah edir.
+
 
 Bunu əvvəlki mətndəki "Aradan Qaldırma Metodları" bölməsindən sonra əlavə edə bilərsən:
 
